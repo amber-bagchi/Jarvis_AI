@@ -41,7 +41,7 @@ def QueryModifier(Query):
 
 def SetMicrophoneStatus(Command):
     with open(rf'{TempDirPath}\Mic.data', "w", encoding='utf-8') as file:
-        file.write(str(Command))
+        file.write(Command)
         
         
 def GetMicrophoneStatus():

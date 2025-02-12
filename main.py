@@ -26,8 +26,8 @@ Assistantname = env_vars.get("AssistantName")
 DefaultMessage = f'''{Username} : Hello, I am {Assistantname}, How are you?
 {Assistantname} : Welcome {Username}. I am doing well.How can I help you?''' #Default message to show
 
-subprocess = []
-Functions = ["open", "close", "play", "generate image", "system", "content", "google search", "youtube search", "reminder"] #define a list of recognized functions keywords for task categorization
+subprocesses = []
+Functions = ["open", "close", "play", "system", "content", "google search", "youtube search"] #define a list of recognized functions keywords for task categorization
 
 
 def ShowDefaultChatIfNoChats():
@@ -72,7 +72,8 @@ def ShowChatOnGUI():
         File.close()
         
 def IntialExecution():
-    SetMicrophoneStatus(False)
+    SetMicrophoneStatus("False")
+    ShowTextToScreen("")
     ShowDefaultChatIfNoChats()
     ChatLogIntergration()
     ShowChatOnGUI()
@@ -93,7 +94,7 @@ def MainExecution():
     Decision = FirstLayerDMM(Query)
     
     print("")
-    print("Decision: {Decision}")
+    print(f"Decision: {Decision}")
     print("")
     
     G = any([i for i in Decision if i.startswith("general")])
@@ -104,6 +105,12 @@ def MainExecution():
     )
     
     for queries in Decision:
+        if "generate " in queries:
+            ImageGenerationQuery = str(queries)
+            ImageExecution = True
+    
+    
+    for queries in Decision:
         if TaskExecution == False:
             if any(queries.startswith(func) for func in Functions):
                 run(Automation(list(Decision)))
@@ -112,13 +119,13 @@ def MainExecution():
     if ImageExecution == True:
         
         with open(r"Frontend\Files\ImageGeneration.data", "w") as file:
-            file.write(f"{ImageGenerationQuery}, True")
+            file.write(f"{ImageGenerationQuery},True")
             
         try:
             p1 = subprocess.Popen(["python", "Backend\ImageGeneration.py"],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                    stdin=subprocess.PIPE, shell=False)
-            subprocess.append(p1)
+            subprocesses.append(p1)
             
         except Exception as e:
             print(f"Error Starting ImageGeneration.py: {e}")
@@ -146,7 +153,7 @@ def MainExecution():
             
             elif "realtime" in Queries:
                 SetAssistantStatus("Searching...")
-                QueryFinal = Queries.replace("realtime ", "")
+                QueryFinal = Queries.replace("realtime ","")
                 Answer = RealtimeSearchEngine(QueryModifier(QueryFinal))
                 ShowTextToScreen(f"{Assistantname} : {Answer}")
                 SetAssistantStatus("Answering...")
@@ -159,7 +166,7 @@ def MainExecution():
                 SetAssistantStatus("Answering...")
                 TextToSpeech(Answer)
                 SetAssistantStatus("Answering...")
-                os._exit(0)
+                os._exit(1)
                 
                 
                 
