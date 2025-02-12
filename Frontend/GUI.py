@@ -162,7 +162,7 @@ class ChatSection(QWidget):
             elif str(old_chat_message) == str(messages):
                 pass
             else:
-                self.addMessage(message = messages, color = 'White')
+                self.addMessages(message = messages, color = 'White')
                 old_chat_message = messages
                 
     
