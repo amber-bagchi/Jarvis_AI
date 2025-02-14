@@ -240,4 +240,3 @@ async def Automation(commands: list[str]):
     
     return True # Indicate Sucess
 
-OpenApp("Facebook")
