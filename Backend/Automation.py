@@ -1,4 +1,4 @@
-from AppOpener import close, open as appopen
+from AppOpener import close, open as appopen, give_appnames
 from webbrowser import open as webopen
 from pywhatkit import search, playonyt
 from dotenv import dotenv_values
@@ -11,6 +11,7 @@ import os
 import requests
 import keyboard
 import asyncio
+import re
 
 env_vars = dotenv_values(".env")  # Load environment variables
 GroqAPIKey = env_vars.get('GroqAPIKey')
@@ -96,40 +97,41 @@ def PlayYoutube(query):
     playonyt(query)
     return True
 
-# Function to open an app or relevant website
-def OpenApp(app, sess=requests.session()):
-    
+
+def OpenApp(app):
     try:
+        # Try opening the app locally
+        from AppOpener import open as appopen
         appopen(app, match_closest=True, output=True, throw_error=True)
         return True
-    
     except:
-        # Nested Function to extract links from the HTML content.
-        def extract_links(html):
-            if html is None:
-                return []
-            soup = BeautifulSoup(html, 'html.parser')
-            links = soup.find_all('a', {'jsname': 'UWckNb'})
-            return [link.get('href') for link in links]
+        print(f"Failed to open '{app}' locally. Searching online...")
 
-        # Nested Function to perform a google search and retrieve html content
-        def search_google(query):
-            url = f"https://www.google.com/search?q={query}"
-            headers = {'User-Agent': useragent}
-            response = sess.get(url, headers=headers)
-            
-            if response.status_code == 200:
-                return response.text
-            else:
-                print("Failed to retrieve search results.")
-            return None
-        
-        html = search_google(app) # Perform the Google search
-        
-        if html:
-            link = extract_links(html)[0] # Extract the first link from the search results
-            webopen(link)
-        return True
+        def open_first_google_result(query):
+            """ Uses Google's 'I'm Feeling Lucky' to open the first result directly and extracts the real URL. """
+            google_search_url = f"https://www.google.com/search?q={query}+site+official&btnI=1"
+
+            headers = {"User-Agent": "Mozilla/5.0"}
+            response = requests.get(google_search_url, headers=headers, allow_redirects=False)  # Don't auto-follow redirects
+
+            if response.status_code in [301, 302]:  # Google redirects
+                redirected_url = response.headers.get("Location", "")
+
+                # Extract the actual URL from Google's redirect URL
+                match = re.search(r"q=(https?://[^\&]*)", redirected_url)
+                if match:
+                    final_url = match.group(1)
+                    print(f"Redirected URL Found: {final_url}")
+                    webbrowser.open(final_url)  # Open extracted URL
+                    return True
+                else:
+                    print("Failed to extract final URL.")
+
+            print("Failed to retrieve search results.")
+            return False
+
+        # Search and open the first result
+        return open_first_google_result(app)
     
     
 # Function to close an application
@@ -207,6 +209,10 @@ async def TranslateAndExecute(commands: list[str]):
             fun = asyncio.to_thread(Content, command.removeprefix("content ")) # Schedule content generation
             funcs.append(fun)
             
+        elif command.startswith("google search "): # Handel google search commands
+            fun = asyncio.to_thread(GoogleSearch, command.removeprefix("google search ")) # Schedule google search
+            funcs.append(fun)
+            
         elif command.startswith("youtube search "): # Handel youtube search commands
             fun = asyncio.to_thread(YouTubeSearch, command.removeprefix("youtube search ")) # Schedule video playing
             funcs.append(fun)
@@ -234,3 +240,4 @@ async def Automation(commands: list[str]):
     
     return True # Indicate Sucess
 
+OpenApp("Facebook")
