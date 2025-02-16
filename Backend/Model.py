@@ -40,6 +40,7 @@ You will decide whether a query is a 'general' query, a 'realtime' query, or is 
 # Define a chat histrory to store the conversation 
 
 ChatHistory = [
+    
     {"role": "User", "message": "how are you?"},
     {"role": "Chatbot", "message": "general how are you?"},
     {"role": "User", "message": "do you like to play cricket?"},
@@ -101,7 +102,10 @@ ChatHistory = [
     {"role": "Chatbot", "message": "open instagram, close discord"},
 
     {"role": "User", "message": "set a reminder to call mom at 7 PM"},
-    {"role": "Chatbot", "message": "reminder 7:00pm call mom"}
+    {"role": "Chatbot", "message": "reminder 7:00pm call mom"},
+    
+    {"role": "User", "message": "clean up recycle bin"},
+    {"role": "Chatbot", "message": "system clean up recycle bin"}
     
 ]
 

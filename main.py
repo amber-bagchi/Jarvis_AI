@@ -9,6 +9,7 @@ SetMicrophoneStatus, TempDirectoryPath,AnswerModifier, QueryModifier)
 from Backend.Model import FirstLayerDMM
 from Backend.RealtimeSearchEngine import RealtimeSearchEngine
 from Backend.Automation import Automation
+from Backend.Automation import SystemAutomation
 from Backend.Chatbot import ChatBot
 from Backend.SpeechToText import SpeechRecognition
 from Backend.TextToSpeech import TextToSpeech
@@ -27,7 +28,7 @@ DefaultMessage = f'''{Username} : Hello, I am {Assistantname}, How are you?
 {Assistantname} : Welcome {Username}. I am doing well.How can I help you?''' #Default message to show
 
 subprocesses = []
-Functions = ["open", "close", "play", "system", "content", "google search", "youtube search"] #define a list of recognized functions keywords for task categorization
+Functions = ["open", "close", "play", "system", "content", "google search", "youtube search", "clean up "] #define a list of recognized functions keywords for task categorization
 
 
 def ShowDefaultChatIfNoChats():
@@ -109,7 +110,16 @@ def MainExecution():
             ImageGenerationQuery = str(queries)
             ImageExecution = True
     
-    
+    # ✅ Handle System Commands Before Calling Automation
+    for queries in Decision:
+        if " clean up " in queries:
+            result = SystemAutomation(queries)
+            print(result)
+            ShowTextToScreen(f"{Assistantname}: {result}")
+            SetAssistantStatus("Answering...")
+            TextToSpeech(result)
+            return True
+        
     for queries in Decision:
         if TaskExecution == False:
             if any(queries.startswith(func) for func in Functions):

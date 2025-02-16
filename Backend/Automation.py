@@ -12,6 +12,10 @@ import requests
 import keyboard
 import asyncio
 import re
+import ctypes
+import os
+import shutil
+from send2trash import send2trash
 
 env_vars = dotenv_values(".env")  # Load environment variables
 GroqAPIKey = env_vars.get('GroqAPIKey')
@@ -144,7 +148,60 @@ def CloseApp(app):
             return True
         except:
             return False
-        
+
+# Function to list all files and folders in a given directory
+def list_files_and_folders(path):
+    """List all files and folders in the specified directory"""
+    if not os.path.exists(path):
+        return f"❌ The folder '{path}' does not exist."
+
+    items = os.listdir(path)
+    return f"📂 Files and folders in {path}:\n" + "\n".join(items) if items else f"🚀 The folder '{path}' is empty."
+
+#  Function to rename a file or folder
+def rename_item(old_path, new_path):
+    """Rename a file or folder"""
+    if os.path.exists(old_path):
+        os.rename(old_path, new_path)
+        return f"Renamed '{old_path}' to '{new_path}'."
+    return f"Item '{old_path}' not found."
+
+#  Function to move a file or folder
+def move_item(src, dest):
+    """Move a file or folder to a new location"""
+    if os.path.exists(src):
+        shutil.move(src, dest)
+        return f" Moved '{src}' to '{dest}'."
+    return f" '{src}' not found."
+
+#  Function to delete a file or folder (moves to Recycle Bin)
+def delete_item(path):
+    """Delete a file or folder (sends to Recycle Bin)"""
+    if os.path.exists(path):
+        send2trash(path)  # Move to Recycle Bin
+        return f" Moved '{path}' to Recycle Bin."
+    return f" '{path}' not found."
+   
+# Function to empty the Recycle Bin
+def empty_recycle_bin():
+    """Empties the Windows Recycle Bin"""
+    try:
+        result = ctypes.windll.shell32.SHEmptyRecycleBinW(None, None, 1)
+        if result == 0:
+            return "Recycle Bin has been cleaned successfully."
+        else:
+            return "Failed to clean the Recycle Bin."
+    except Exception as e:
+        return f"Error cleaning Recycle Bin: {str(e)}"
+
+# Function to process system cleanup commands
+def SystemAutomation(command):
+    
+    if "clean up recycle bin" in command:
+        return empty_recycle_bin()
+    return " Command not recognized."
+
+     
 # Function to execute system-level commands.
 def System(command):
     
